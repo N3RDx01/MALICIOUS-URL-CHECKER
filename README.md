@@ -127,4 +127,4 @@ Edit CSS variables in the `<style>` section:
 5. Open a pull request
 
 ### Main Interface
-![Main Interface](screenshot/Result-safe.png)
+![Main Interface](screenshot/Result-safe.jpg)
