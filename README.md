@@ -28,7 +28,7 @@ Key components:
 No installation is required! Simply download or clone this repository:
 
 ```bash
-git clone https://github.com/yourusername/malicious-url-checker.git
+git clone https://github.com/N3RDx01/malicious-url-checker.git
 cd malicious-url-checker
 ```
 
@@ -76,54 +76,12 @@ None! This project uses only vanilla HTML, CSS, and JavaScript with no external 
    - Triggers browser download action
    - Cleans up temporary elements
 
-### Data Flow
-
-```
-User Input → Validation → Domain Extraction → Threat Comparison → 
-Visual Feedback → History Logging → (Optional) Export to JSON
-```
-
 ### Performance Optimizations
 
 - Early termination in domain matching loop
 - Efficient DOM updates using prepend
 - Minimal memory footprint (client-side only)
 - No external network requests
-
-## Screenshots
-
-### Main Interface
-![Main Interface](screenshots/main-interface.png)
-*Clean, responsive design with intuitive input*
-
-### Safe URL Result
-![Safe URL](screenshots/safe-result.png)
-*Green notification for verified safe domains*
-
-### Malicious URL Detection
-![Malicious URL](screenshots/malicious-result.png)
-*Red warning for detected threats*
-
-### Scan History
-![Scan History](screenshots/history.png)
-*Persistent history during session with clear status indicators*
-
-## Fixing Icon Visibility in Scan History
-
-If the status icons (✅ or 🚨) are not visible in the scan history, this is likely due to emoji rendering issues in some browsers/systems. The application uses CSS classes for styling instead:
-
-```css
-.badge-safe { color: #4ade80; }
-.badge-danger { color: #f87171; }
-```
-
-In the scan history list items, we use strong tags with these classes:
-```html
-<strong class="badge-safe">Safe</strong>
-<strong class="badge-danger">Malicious</strong>
-```
-
-This ensures consistent appearance across different systems and browsers while maintaining accessibility.
 
 ## Browser Support
 
@@ -167,11 +125,3 @@ Edit CSS variables in the `<style>` section:
 3. Commit your changes
 4. Push to the branch
 5. Open a pull request
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details
-
----
-
-Made with ❤️ using vanilla JavaScript
