@@ -128,3 +128,4 @@ Edit CSS variables in the `<style>` section:
 
 ### Main Interface
 ![Main Interface](screenshot/Result-safe.jpg)
+![Main Interface](screenshot/Result-Malicious.jpg)
