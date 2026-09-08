@@ -125,3 +125,6 @@ Edit CSS variables in the `<style>` section:
 3. Commit your changes
 4. Push to the branch
 5. Open a pull request
+
+### Main Interface
+![Main Interface](screenshots/result-safe.png)
