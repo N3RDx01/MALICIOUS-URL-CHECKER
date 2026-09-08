@@ -111,7 +111,7 @@ const maliciousDomains = [
 ];
 ```
 
-### Styling Changes
+### Styling Changed
 
 Edit CSS variables in the `<style>` section:
 - Colors: Adjust hex values for themes
@@ -127,4 +127,4 @@ Edit CSS variables in the `<style>` section:
 5. Open a pull request
 
 ### Main Interface
-![Main Interface](screenshots/result-safe.png)
+![Main Interface](screenshots/Result-safe.png)
