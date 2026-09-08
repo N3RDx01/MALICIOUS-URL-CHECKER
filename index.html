@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malicious URL Checker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 28px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      max-width: 520px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: #f8fafc;
+    }
+
+    p.subtitle {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 11px 14px;
+      font-size: 0.95rem;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      color: #f8fafc;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #38bdf8;
+    }
+
+    button {
+      padding: 11px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background-color: #0284c7;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #0369a1;
+    }
+
+    .result {
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .result.safe {
+      display: block;
+      background-color: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .result.malicious {
+      display: block;
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .result.warning {
+      display: block;
+      background-color: rgba(234, 179, 8, 0.15);
+      color: #facc15;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #334155;
+    }
+
+    .history-header h2 {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    ul.history-list {
+      list-style: none;
+      margin-top: 10px;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    ul.history-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .badge-safe { color: #4ade80; }
+    .badge-danger { color: #f87171; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Malicious URL Checker</h1>
+    <p class="subtitle">Validate domains client-side against blacklisted threat indicators.</p>
+
+    <div class="input-row">
+      <input type="text" id="urlInput" placeholder="e.g. phishing-bank.test or http://safe.org" />
+      <button id="checkBtn">Check URL</button>
+    </div>
+
+    <div id="resultBox" class="result"></div>
+
+    <div class="history-header">
+      <h2>Scan History</h2>
+      <button id="exportBtn" class="btn-secondary">Export Log</button>
+    </div>
+    <ul id="historyList" class="history-list"></ul>
+  </div>
+
+  <script>
+    // Threat intelligence database
+    const maliciousDomains = [
+      "phishing-bank.test",
+      "malware-download.xyz",
+      "fake-login-service.com",
+      "crypto-free-airdrop.net",
+      "account-update-alert.ru"
+    ];
+
+    // Store scan results
+    const scanLogs = [];
+
+    // DOM elements
+    const urlInput = document.getElementById("urlInput");
+    const checkBtn = document.getElementById("checkBtn");
+    const resultBox = document.getElementById("resultBox");
+    const historyList = document.getElementById("historyList");
+    const exportBtn = document.getElementById("exportBtn");
+
+    /**
+     * Extracts hostname from URL string
+     * @param {string} input - User input string
+     * @returns {string|null} Hostname or null if invalid
+     */
+    function extractHostname(input) {
+      if (!input || typeof input !== 'string') return null;
+      
+      let raw = input.trim();
+      if (!raw) return null;
+      
+      // Add protocol if missing
+      if (!/^https?:\/\//i.test(raw)) {
+        raw = "http://" + raw;
+      }
+      
+      try {
+        const url = new URL(raw);
+        return url.hostname.toLowerCase();
+      } catch {
+        return null;
+      }
+    }
+
+    /**
+     * Checks URL against malicious domain list
+     */
+    function checkUrl() {
+      const inputVal = urlInput.value.trim();
+      
+      // Validate input
+      if (!inputVal) {
+        showStatus("Please enter a domain or URL.", "warning");
+        return;
+      }
+
+      // Extract domain
+      const domain = extractHostname(inputVal);
+      if (!domain || !domain.includes(".")) {
+        showStatus("Invalid URL format. Provide a valid domain name.", "warning");
+        return;
+      }
+
+      // Check against malicious domains (optimized)
+      let isMalicious = false;
+      for (const bad of maliciousDomains) {
+        if (domain === bad || domain.endsWith("." + bad)) {
+          isMalicious = true;
+          break;
+        }
+      }
+      
+      // Show result and log
+      const status = isMalicious ? "Malicious" : "Safe";
+      if (isMalicious) {
+        showStatus(`🚨 Malicious: "${domain}" matches threat database.`, "malicious");
+      } else {
+        showStatus(`✅ Safe: "${domain}" is not listed in blocklist.`, "safe");
+      }
+
+      logResult(domain, status);
+      urlInput.value = "";
+    }
+
+    /**
+     * Displays status message to user
+     * @param {string} text - Message to display
+     * @param {string} type - Type of message (safe/malicious/warning)
+     */
+    function showStatus(text, type) {
+      resultBox.textContent = text;
+      resultBox.className = `result ${type}`;
+    }
+
+    /**
+     * Logs scan result to history
+     * @param {string} domain - Scanned domain
+     * @param {string} status - Scan result
+     */
+    function logResult(domain, status) {
+      const entry = { 
+        domain, 
+        status, 
+        timestamp: new Date().toLocaleTimeString() 
+      };
+      scanLogs.push(entry);
+
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span>${domain}</span> 
+        <strong class="${status === 'Safe' ? 'badge-safe' : 'badge-danger'}">${status}</strong>
+      `;
+      historyList.prepend(li);
+    }
+
+    /**
+     * Exports scan logs as JSON file
+     */
+    function exportLogs() {
+      if (scanLogs.length === 0) {
+        alert("No logs to export.");
+        return;
+      }
+      
+      // Create formatted JSON data
+      const jsonData = JSON.stringify(scanLogs, null, 2);
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonData);
+      
+      // Create temporary download link
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.href = dataStr;
+      downloadAnchor.download = `scan_logs_${Date.now()}.json`;
+      
+      // Trigger download and cleanup
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+    }
+
+    // Event handlers
+    checkBtn.addEventListener("click", checkUrl);
+    
+    urlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkUrl();
+    });
+    
+    exportBtn.addEventListener("click", exportLogs);
+  </script>
+</body>
+</html>
